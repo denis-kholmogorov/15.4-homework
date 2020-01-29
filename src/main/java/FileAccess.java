@@ -127,7 +127,10 @@ public class FileAccess
         }
         return listFiles;
     }
-    public void close() throws IOException {
+
+
+    public void close() throws IOException
+    {
         hdfs.close();
     }
 
