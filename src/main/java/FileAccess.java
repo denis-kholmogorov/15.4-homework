@@ -43,7 +43,7 @@ public class FileAccess
      */
     public void append(String path, String content) throws IOException {
         BufferedWriter bufferedWriter = null;
-        BufferedReader bufferedReader =null
+        BufferedReader bufferedReader =null;
         String str;
         try {
             Path pathFile = new Path(path);
