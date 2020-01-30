@@ -32,14 +32,7 @@ public class FileAccess
      * @param path
      */
     public void create(String path) throws IOException {
-        hdfs.create(new Path(path));
-       /* OutputStream os = hdfs.create(new Path(path));
-        BufferedWriter br = new BufferedWriter(
-                new OutputStreamWriter(os, "UTF-8")
-        );
-        br.write("Hello");
-        br.flush();
-        br.close();*/
+        hdfs.createNewFile(new Path(path));
     }
 
     /**
@@ -49,17 +42,25 @@ public class FileAccess
      * @param content
      */
     public void append(String path, String content) throws IOException {
-        Path pathFile = new Path(path);
-        InputStream inputStream = hdfs.open(pathFile);
-        BufferedReader bfr = new BufferedReader(new InputStreamReader(inputStream));
-        String str = null;
-        BufferedWriter bwr = new BufferedWriter(new OutputStreamWriter(hdfs.create(pathFile, true)));
-        while ((str = bfr.readLine()) != null){
-            bwr.write(str);
+        BufferedWriter bufferedWriter = null;
+        BufferedReader bufferedReader =null
+        String str;
+        try {
+            Path pathFile = new Path(path);
+            InputStream inputStream = hdfs.open(pathFile);
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+            bufferedWriter = new BufferedWriter(new OutputStreamWriter(hdfs.create(pathFile, true)));
+            while ((str = bufferedReader.readLine()) != null) {
+                bufferedWriter.write(str);
+            }
+            bufferedWriter.write(content);
         }
-        bwr.write(content);
-        bwr.flush();
-        bwr.close();
+        finally {
+            bufferedReader.close();
+            bufferedWriter.flush();
+            bufferedWriter.close();
+        }
     }
 
     /**
@@ -68,20 +69,27 @@ public class FileAccess
      * @param path
      * @return
      */
-    public String read(String path) throws IOException {
+    public String read(String path) throws IOException
+    {
+        if(!isDirectory(path))
+        {
+            BufferedReader bufferedReader = null;
+            try{
+                InputStream inputStream =  hdfs.open(new Path(path));
+                bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                StringBuilder builder = new StringBuilder();
+                String line;
 
-        if(!isDirectory(path)){
-            InputStream inputStream = hdfs.open(new Path(path));
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            StringBuilder builder = new StringBuilder();
-            String line;
-
-            while((line = bufferedReader.readLine()) != null){
-                builder.append(line);
+                while((line = bufferedReader.readLine()) != null)
+                {
+                    builder.append(line);
+                }
+                return builder.toString();
             }
-            bufferedReader.close();
-            return builder.toString();
-        }
+            finally {
+                bufferedReader.close();
+            }
+    }
         return null;
     }
 
@@ -106,8 +114,6 @@ public class FileAccess
      */
     public boolean isDirectory(String path) throws IOException
     {
-
-
         return hdfs.isDirectory(new Path(path));
     }
 
